@@ -34,7 +34,7 @@ export default function Hero() {
         playsInline
         className="fixed top-0 left-0 w-full h-full object-cover -z-10 scale-110"
       >
-        <source src="/assets/video/Porsche edit.mp4" type="video/mp4" />
+        <source src="/assets/npm/Porsche edit.mp4" type="video/mp4" />
       </video>
 
       {/* Overlay for better text visibility */}
