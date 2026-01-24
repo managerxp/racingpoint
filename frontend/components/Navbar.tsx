@@ -16,7 +16,9 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const headerClasses = "bg-transparent";
+  const headerClasses = scrolled 
+    ? "bg-black/30 backdrop-blur-md shadow-lg border-b border-white/10" 
+    : "bg-transparent";
 
   const logoSize = scrolled ? "h-12" : "h-16";
   const logoPadding = scrolled ? "py-1" : "py-2";

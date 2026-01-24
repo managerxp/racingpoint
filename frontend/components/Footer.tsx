@@ -1,3 +1,7 @@
+"use client";
+
+import Image from "next/image";
+
 export default function Footer() {
   const currentYear = new Date().getFullYear();
 
@@ -9,11 +13,16 @@ export default function Footer() {
           {/* Logo Section */}
           <div className="col-span-1">
             <div className="flex items-center gap-2 mb-2">
-              {/* Racing Car Icon */}
-              <svg className="w-8 h-8 text-red-600" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.22.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm11 0c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zM5 11l1.5-4.5h11L19 11H5z" />
-              </svg>
-              <h2 className="text-2xl font-bold text-white">RacingPoint</h2>
+              <Image
+                src="/assets/logo/racing_logo.png"
+                alt="RacingPoint Logo"
+                width={200}
+                height={60}
+                className="h-16 w-auto object-contain"
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                }}
+              />
             </div>
             <p className="text-sm text-gray-400">
               Experience the ultimate F1 simulator racing platform
