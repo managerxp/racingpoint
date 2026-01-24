@@ -75,10 +75,10 @@ export default function Hero() {
       {/* Content */}
       <h1
         ref={titleRef}
-        className="relative z-20 text-6xl font-extrabold text-center bg-gradient-to-r from-gray-300 via-gray-100 to-gray-400 bg-clip-text text-transparent drop-shadow-2xl px-4 whitespace-pre-line"
+        className="relative z-20 text-6xl font-extrabold text-center px-4 whitespace-pre-line text-gray-300 -mt-20"
       >
         {displayedText}
-        <span className="animate-pulse">|</span>
+        <span className="animate-pulse text-gray-300">|</span>
       </h1>
 
       
