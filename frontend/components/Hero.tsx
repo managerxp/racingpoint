@@ -1,11 +1,20 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 
 export default function Hero() {
   const titleRef = useRef<HTMLHeadingElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [currentTextIndex, setCurrentTextIndex] = useState(0);
+  const [displayedText, setDisplayedText] = useState("");
+  const [isTyping, setIsTyping] = useState(true);
+
+  const textScenes = [
+    "Ultimate Racing\nSimulator Experience",
+    "Feel the Speed\nMaster the Track",
+    "Push Your Limits\nRace Like a Pro"
+  ];
 
   useEffect(() => {
     gsap.from(titleRef.current, {
@@ -22,6 +31,29 @@ export default function Hero() {
       });
     }
   }, []);
+
+  useEffect(() => {
+    const currentText = textScenes[currentTextIndex];
+    let currentIndex = 0;
+
+    if (isTyping) {
+      const typingInterval = setInterval(() => {
+        if (currentIndex <= currentText.length) {
+          setDisplayedText(currentText.substring(0, currentIndex));
+          currentIndex++;
+        } else {
+          setIsTyping(false);
+          setTimeout(() => {
+            setIsTyping(true);
+            setCurrentTextIndex((prev) => (prev + 1) % textScenes.length);
+          }, 2000); // Wait 2 seconds before moving to next text
+          clearInterval(typingInterval);
+        }
+      }, 100); // Typing speed
+
+      return () => clearInterval(typingInterval);
+    }
+  }, [currentTextIndex, isTyping]);
 
   return (
     <section className="relative w-full h-screen flex items-center justify-center">
@@ -43,9 +75,10 @@ export default function Hero() {
       {/* Content */}
       <h1
         ref={titleRef}
-        className="relative z-20 text-6xl font-extrabold text-center text-white/70 drop-shadow-2xl px-4"
+        className="relative z-20 text-6xl font-extrabold text-center bg-gradient-to-r from-gray-300 via-gray-100 to-gray-400 bg-clip-text text-transparent drop-shadow-2xl px-4 whitespace-pre-line"
       >
-        Ultimate Racing<br />Simulator Experience
+        {displayedText}
+        <span className="animate-pulse">|</span>
       </h1>
 
       
