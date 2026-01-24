@@ -2,15 +2,18 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const { login } = useAuth();
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
     
     if (!email || !password) {
       setError("Please fill in all fields");
@@ -22,16 +25,16 @@ export default function LoginPage() {
       return;
     }
 
-    // Simulate login
-    setSubmitted(true);
-    setError("");
-    
-    // Reset form
-    setTimeout(() => {
-      setSubmitted(false);
-      setEmail("");
-      setPassword("");
-    }, 2000);
+    setLoading(true);
+
+    try {
+      await login(email, password);
+      // Navigation is handled by the login function in AuthContext
+    } catch (err: any) {
+      setError(err.message || "Login failed. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -45,13 +48,6 @@ export default function LoginPage() {
 
         {/* Login Form */}
         <div className="bg-gradient-to-br from-gray-900 to-black border border-red-600/30 rounded-xl p-8">
-          {submitted && (
-            <div className="mb-6 p-4 bg-green-600/20 border border-green-600 rounded-lg">
-              <p className="text-green-400 font-semibold">✓ Login successful!</p>
-              <p className="text-green-300 text-sm mt-1">Welcome to RacingPoint!</p>
-            </div>
-          )}
-
           {error && (
             <div className="mb-6 p-4 bg-red-600/20 border border-red-600 rounded-lg">
               <p className="text-red-400 font-semibold">✗ {error}</p>
@@ -101,9 +97,10 @@ export default function LoginPage() {
             {/* Login Button */}
             <button
               type="submit"
-              className="w-full bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-bold py-3 px-6 rounded-lg transition transform hover:scale-105 active:scale-95 mt-8"
+              disabled={loading}
+              className="w-full bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-bold py-3 px-6 rounded-lg transition transform hover:scale-105 active:scale-95 mt-8 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Login
+              {loading ? "Logging in..." : "Login"}
             </button>
           </form>
 

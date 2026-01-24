@@ -1,6 +1,7 @@
 import "./globals.css";
 import Footer from "@/components/Footer";
 import { Orbitron } from "next/font/google";
+import { AuthProvider } from "@/contexts/AuthContext";
 
 const orbitron = Orbitron({ 
   subsets: ["latin"],
@@ -21,8 +22,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${orbitron.className} bg-black text-white`}>
-        {children}
-        <Footer />
+        <AuthProvider>
+          {children}
+          <Footer />
+        </AuthProvider>
       </body>
     </html>
   );
