@@ -32,7 +32,7 @@ export default function Hero() {
         loop
         muted
         playsInline
-        className="fixed top-0 left-0 w-full h-full object-cover -z-10 scale-110"
+        className="fixed top-0 left-0 w-full h-full object-cover -z-10 scale-120"
       >
         <source src="assets\logo\Edit Porsche.mp4" type="video/mp4" />
       </video>
