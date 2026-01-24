@@ -3,11 +3,14 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function Navbar() {
   const [isRacingHubOpen, setIsRacingHubOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const { user, isAuthenticated, logout } = useAuth();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 10);
@@ -126,13 +129,76 @@ export default function Navbar() {
           </Link>
         </nav>
 
-        {/* Book Now Button - Right Side */}
-        <Link
-          href="/booking"
-          className="rounded-full bg-red-500 px-4 md:px-6 py-2 text-xs md:text-sm font-semibold text-black transition hover:bg-red-400"
-        >
-          <span className="hidden sm:inline">Book a Seat</span><span className="sm:hidden">Book</span>
-        </Link>
+        {/* Right Side - Book Button and User Avatar */}
+        <div className="flex items-center gap-3">
+          {/* Book Now Button */}
+          <Link
+            href="/booking"
+            className="rounded-full bg-red-500 px-4 md:px-6 py-2 text-xs md:text-sm font-semibold text-black transition hover:bg-red-400"
+          >
+            <span className="hidden sm:inline">Book a Seat</span><span className="sm:hidden">Book</span>
+          </Link>
+
+          {/* User Avatar - Only show if logged in */}
+          {isAuthenticated && user && (
+            <div className="relative">
+              <button
+                onClick={() => setUserMenuOpen(!userMenuOpen)}
+                className="flex items-center gap-2 hover:opacity-80 transition"
+              >
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-red-600 to-red-800 flex items-center justify-center text-white font-semibold border-2 border-red-500">
+                  {user.firstName.charAt(0)}{user.lastName.charAt(0)}
+                </div>
+              </button>
+
+              {/* User Dropdown Menu */}
+              {userMenuOpen && (
+                <div className="absolute top-full right-0 mt-2 bg-black/95 backdrop-blur-lg border border-red-500/25 rounded-lg shadow-2xl overflow-hidden min-w-56">
+                  <div className="px-4 py-3 border-b border-red-500/25">
+                    <p className="text-white font-semibold">{user.firstName} {user.lastName}</p>
+                    <p className="text-gray-400 text-sm">{user.email}</p>
+                  </div>
+                  
+                  {user.isAdmin && (
+                    <Link
+                      href="/admin/dashboard"
+                      onClick={() => setUserMenuOpen(false)}
+                      className="block px-4 py-3 text-white/80 hover:bg-red-500 hover:text-white transition border-b border-red-500/25"
+                    >
+                       Admin Dashboard
+                    </Link>
+                  )}
+
+                  <Link
+                    href="/profile"
+                    onClick={() => setUserMenuOpen(false)}
+                    className="block px-4 py-3 text-white/80 hover:bg-red-500 hover:text-white transition border-b border-red-500/25"
+                  >
+                    My Profile
+                  </Link>
+
+                  <Link
+                    href="/my-bookings"
+                    onClick={() => setUserMenuOpen(false)}
+                    className="block px-4 py-3 text-white/80 hover:bg-red-500 hover:text-white transition border-b border-red-500/25"
+                  >
+                    My Bookings
+                  </Link>
+
+                  <button
+                    onClick={() => {
+                      setUserMenuOpen(false);
+                      logout();
+                    }}
+                    className="w-full text-left px-4 py-3 text-red-400 hover:bg-red-500 hover:text-white transition"
+                  >
+                    Logout
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Mobile Menu */}
