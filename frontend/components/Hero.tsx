@@ -43,7 +43,7 @@ export default function Hero() {
       {/* Content */}
       <h1
         ref={titleRef}
-        className="relative z-20 text-6xl font-extrabold text-center text-white drop-shadow-2xl px-4"
+        className="relative z-20 text-6xl font-extrabold text-center text-white/70 drop-shadow-2xl px-4"
       >
         Ultimate Racing<br />Simulator Experience
       </h1>
