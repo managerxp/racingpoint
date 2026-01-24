@@ -2,25 +2,33 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function SignUpPage() {
+  const router = useRouter();
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
     email: "",
+    phone: "",
+    dob: "",
     password: "",
     confirmPassword: "",
   });
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleSignUp = (e: React.FormEvent) => {
+  const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
 
     if (
       !formData.firstName ||
       !formData.lastName ||
       !formData.email ||
+      !formData.phone ||
+      !formData.dob ||
       !formData.password ||
       !formData.confirmPassword
     ) {
@@ -43,21 +51,42 @@ export default function SignUpPage() {
       return;
     }
 
-    // Simulate registration
-    setSubmitted(true);
-    setError("");
+    setLoading(true);
 
-    // Reset form
-    setTimeout(() => {
-      setSubmitted(false);
-      setFormData({
-        firstName: "",
-        lastName: "",
-        email: "",
-        password: "",
-        confirmPassword: "",
+    try {
+      const response = await fetch("http://localhost:5000/api/auth/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
       });
-    }, 2000);
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        setSubmitted(true);
+        setError("");
+
+        // Store token in localStorage
+        if (data.data.token) {
+          localStorage.setItem("token", data.data.token);
+          localStorage.setItem("user", JSON.stringify(data.data.user));
+        }
+
+        // Navigate to login page after 2 seconds
+        setTimeout(() => {
+          router.push("/login");
+        }, 2000);
+      } else {
+        setError(data.message || "Registration failed. Please try again.");
+      }
+    } catch (err) {
+      setError("Unable to connect to server. Please try again later.");
+      console.error("Registration error:", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -74,7 +103,7 @@ export default function SignUpPage() {
           {submitted && (
             <div className="mb-6 p-4 bg-green-600/20 border border-green-600 rounded-lg">
               <p className="text-green-400 font-semibold">✓ Account created successfully!</p>
-              <p className="text-green-300 text-sm mt-1">You can now login with your credentials.</p>
+              <p className="text-green-300 text-sm mt-1">Redirecting to login page...</p>
             </div>
           )}
 
@@ -133,6 +162,37 @@ export default function SignUpPage() {
               />
             </div>
 
+            {/* Phone Input */}
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Phone Number
+              </label>
+              <input
+                type="tel"
+                value={formData.phone}
+                onChange={(e) =>
+                  setFormData({ ...formData, phone: e.target.value })
+                }
+                placeholder="+1234567890"
+                className="w-full bg-black border border-gray-600 text-white focus:border-red-600 focus:ring-1 focus:ring-red-600 rounded-lg py-3 px-4 transition"
+              />
+            </div>
+
+            {/* Date of Birth Input */}
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Date of Birth
+              </label>
+              <input
+                type="date"
+                value={formData.dob}
+                onChange={(e) =>
+                  setFormData({ ...formData, dob: e.target.value })
+                }
+                className="w-full bg-black border border-gray-600 text-white focus:border-red-600 focus:ring-1 focus:ring-red-600 rounded-lg py-3 px-4 transition"
+              />
+            </div>
+
             {/* Password Input */}
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
@@ -177,9 +237,10 @@ export default function SignUpPage() {
             {/* Sign Up Button */}
             <button
               type="submit"
-              className="w-full bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-bold py-3 px-6 rounded-lg transition transform hover:scale-105 active:scale-95 mt-6"
+              disabled={loading}
+              className="w-full bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-bold py-3 px-6 rounded-lg transition transform hover:scale-105 active:scale-95 mt-6 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Create Account
+              {loading ? "Creating Account..." : "Create Account"}
             </button>
           </form>
 
