@@ -1,0 +1,87 @@
+import pg from 'pg';
+import bcrypt from 'bcryptjs';
+import dotenv from 'dotenv';
+
+const { Pool } = pg;
+dotenv.config();
+
+const pool = new Pool({
+  host: process.env.DB_HOST,
+  port: process.env.DB_PORT,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
+  max: 20,
+  idleTimeoutMillis: 30000,
+  connectionTimeoutMillis: 2000,
+});
+
+// Test database connection
+const testConnection = async () => {
+  try {
+    const client = await pool.connect();
+    console.log(' Database connected successfully');
+    client.release();
+    return true;
+  } catch (error) {
+    console.error(' Database connection failed:', error.message);
+    return false;
+  }
+};
+
+// Initialize database with tables
+const initializeDatabase = async () => {
+  try {
+    // Test connection first
+    if (!await testConnection()) {
+      throw new Error('Database connection failed');
+    }
+
+    // Create users table
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS users (
+        id SERIAL PRIMARY KEY,
+        first_name VARCHAR(100) NOT NULL,
+        last_name VARCHAR(100) NOT NULL,
+        email VARCHAR(255) UNIQUE NOT NULL,
+        phone VARCHAR(20),
+        dob DATE,
+        password VARCHAR(255) NOT NULL,
+        is_admin BOOLEAN DEFAULT FALSE,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    // Create index for better performance
+    await pool.query(`
+      CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+    `);
+
+    // Check if admin exists, if not create from .env
+    const adminEmail = process.env.ADMIN_EMAIL;
+    const adminResult = await pool.query(
+      'SELECT * FROM users WHERE email = $1 AND is_admin = true',
+      [adminEmail]
+    );
+
+    if (adminResult.rows.length === 0 && adminEmail) {
+      const hashedPassword = await bcrypt.hash(process.env.ADMIN_PASSWORD, 10);
+      await pool.query(
+        `INSERT INTO users (first_name, last_name, email, password, is_admin) 
+         VALUES ($1, $2, $3, $4, $5)`,
+        ['Admin', 'System', adminEmail, hashedPassword, true]
+      );
+      console.log(' Admin user created successfully');
+    }
+
+    console.log(' Database initialized successfully');
+    return true;
+  } catch (error) {
+    console.error(' Error initializing database:', error);
+    throw error;
+  }
+};
+
+// Export pool and functions
+export { pool, initializeDatabase, testConnection };
