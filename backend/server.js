@@ -10,6 +10,7 @@ dotenv.config();
 // Import routes
 import authRoutes from './routes/auth.Routes.js';
 import adminRoutes from './routes/admin.Routes.js';
+import carCategoryRouter from './routes/carCateory.Routes.js';
 
 const app = express();
 
@@ -27,6 +28,7 @@ app.use(express.urlencoded({ extended: true }));
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/car-categories', carCategoryRouter);
 
 // Health check route
 app.get('/health', (req, res) => {
