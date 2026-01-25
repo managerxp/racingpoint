@@ -1,17 +1,15 @@
 import express from 'express';
 import {
-    createCarCategory,
-    getAllCarCategories,
-    getCarCategoryById,
-    updateCarCategory,
-    deleteCarCategory
-} from '../controllers/carCategory.Controller.js';
+    createCategory as createCarCategory,
+    getAllCategories as getAllCarCategories,
+    updateCategory as updateCarCategory,
+    deleteCategory as deleteCarCategory
+} from '../controllers/carCateory.Controller.js';
 
 const carCategoryRouter = express.Router();
 
 carCategoryRouter.post('/', createCarCategory);
 carCategoryRouter.get('/', getAllCarCategories);
-carCategoryRouter.get('/:id', getCarCategoryById);
 carCategoryRouter.put('/:id', updateCarCategory);
 carCategoryRouter.delete('/:id', deleteCarCategory);
 

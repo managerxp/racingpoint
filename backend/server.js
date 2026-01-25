@@ -11,6 +11,7 @@ dotenv.config();
 import authRoutes from './routes/auth.Routes.js';
 import adminRoutes from './routes/admin.Routes.js';
 import carCategoryRouter from './routes/carCateory.Routes.js';
+import carRouter from './routes/cars.Routes.js';
 
 const app = express();
 
@@ -29,6 +30,8 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/car-categories', carCategoryRouter);
+app.use('/uploads', express.static('uploads'));
+app.use('/api/cars',carRouter);
 
 // Health check route
 app.get('/health', (req, res) => {

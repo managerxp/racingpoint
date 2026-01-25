@@ -1,4 +1,4 @@
-import pool from '../config/database.js';
+import { pool } from '../config/database.js';
 
 // Create a new car category
 export const createCategory = async (req, res) => {
