@@ -78,6 +78,21 @@ const initializeDatabase = async () => {
     );
     `);
 
+    //tracks table
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS tracks (
+      id SERIAL PRIMARY KEY,
+      name VARCHAR(100) UNIQUE NOT NULL,
+      length_km FLOAT NOT NULL,
+      country VARCHAR(100),
+      image_url TEXT,
+      difficulty_level VARCHAR(50),
+      created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    );
+    `);
+    
+
 
 
     // Create index for better performance

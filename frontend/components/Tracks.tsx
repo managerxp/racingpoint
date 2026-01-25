@@ -1,138 +1,39 @@
+"use client";
+
+import { useState, useEffect } from "react";
+
 export default function Tracks() {
-  const f1Tracks = [
-    {
-      id: 1,
-      name: "Bahrain International Circuit",
-      location: "Sakhir, Bahrain",
-      country: "🇧🇭",
-      length: "5.412 km",
-      laps: "57",
-      fastestLap: "1:31.447",
-      difficulty: "Medium",
-      emoji: "🏜️"
-    },
-    {
-      id: 2,
-      name: "Jeddah Corniche Circuit",
-      location: "Jeddah, Saudi Arabia",
-      country: "🇸🇦",
-      length: "6.174 km",
-      laps: "50",
-      fastestLap: "1:26.627",
-      difficulty: "Hard",
-      emoji: "🌃"
-    },
-    {
-      id: 3,
-      name: "Albert Park Circuit",
-      location: "Melbourne, Australia",
-      country: "🇦🇺",
-      length: "5.278 km",
-      laps: "58",
-      fastestLap: "1:23.861",
-      difficulty: "Medium",
-      emoji: "🦘"
-    },
-    {
-      id: 4,
-      name: "Shanghai International Circuit",
-      location: "Shanghai, China",
-      country: "🇨🇳",
-      length: "5.451 km",
-      laps: "56",
-      fastestLap: "1:30.860",
-      difficulty: "Medium",
-      emoji: "🏯"
-    },
-    {
-      id: 5,
-      name: "Suzuka International Racing Course",
-      location: "Suzuka, Japan",
-      country: "🇯🇵",
-      length: "5.807 km",
-      laps: "53",
-      fastestLap: "1:25.892",
-      difficulty: "Expert",
-      emoji: "⛩️"
-    },
-    {
-      id: 6,
-      name: "Monaco Grand Prix Circuit",
-      location: "Monte Carlo, Monaco",
-      country: "🇲🇨",
-      length: "3.337 km",
-      laps: "78",
-      fastestLap: "1:12.909",
-      difficulty: "Expert",
-      emoji: "🎰"
-    },
-    {
-      id: 7,
-      name: "Circuit de Spa-Francorchamps",
-      location: "Spa, Belgium",
-      country: "🇧🇪",
-      length: "7.004 km",
-      laps: "44",
-      fastestLap: "1:46.286",
-      difficulty: "Hard",
-      emoji: "🌧️"
-    },
-    {
-      id: 8,
-      name: "Silverstone Circuit",
-      location: "Silverstone, England",
-      country: "🇬🇧",
-      length: "5.891 km",
-      laps: "52",
-      fastestLap: "1:27.097",
-      difficulty: "Medium",
-      emoji: "🏎️"
-    },
-    {
-      id: 9,
-      name: "Circuit Gilles Villeneuve",
-      location: "Montreal, Canada",
-      country: "🇨🇦",
-      length: "4.361 km",
-      laps: "70",
-      fastestLap: "1:13.622",
-      difficulty: "Hard",
-      emoji: "🍁"
-    },
-    {
-      id: 10,
-      name: "Autodromo Hermanos Rodríguez",
-      location: "Mexico City, Mexico",
-      country: "🇲🇽",
-      length: "4.304 km",
-      laps: "71",
-      fastestLap: "1:17.774",
-      difficulty: "Medium",
-      emoji: "🌵"
-    },
-    {
-      id: 11,
-      name: "Circuit of the Americas",
-      location: "Austin, USA",
-      country: "🇺🇸",
-      length: "5.515 km",
-      laps: "56",
-      fastestLap: "1:34.769",
-      difficulty: "Hard",
-      emoji: "⭐"
-    },
-    {
-      id: 12,
-      name: "Autódromo José María Vargas",
-      location: "Austin, Brazil",
-      country: "🇧🇷",
-      length: "4.309 km",
-      laps: "71",
-      fastestLap: "1:17.052",
-      difficulty: "Hard",
-      emoji: "🌴"
-    },
-  ];
+  const [tracks, setTracks] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedCountry, setSelectedCountry] = useState("all");
+  const [selectedDifficulty, setSelectedDifficulty] = useState("all");
+  const [availableCountries, setAvailableCountries] = useState<string[]>([]);
+  const [availableDifficulties, setAvailableDifficulties] = useState<string[]>([]);
+
+  useEffect(() => {
+    fetchTracks();
+  }, []);
+
+  const fetchTracks = async () => {
+    try {
+      const response = await fetch("http://localhost:5000/api/tracks");
+      const data = await response.json();
+      if (data.tracks) {
+        setTracks(data.tracks);
+        
+        // Extract unique countries and difficulties
+        const countries = [...new Set(data.tracks.map((track: any) => track.country).filter(Boolean))];
+        const difficulties = [...new Set(data.tracks.map((track: any) => track.difficulty_level).filter(Boolean))];
+        
+        setAvailableCountries(countries as string[]);
+        setAvailableDifficulties(difficulties as string[]);
+      }
+    } catch (error) {
+      console.error("Error fetching tracks:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const getDifficultyColor = (difficulty: string) => {
     switch(difficulty) {
@@ -140,109 +41,176 @@ export default function Tracks() {
       case "Medium": return "bg-yellow-600";
       case "Hard": return "bg-orange-600";
       case "Expert": return "bg-red-600";
+      case "Professional": return "bg-purple-600";
       default: return "bg-gray-600";
     }
   };
+
+  // Filter tracks based on selected country and difficulty
+  const filteredTracks = tracks.filter((track: any) => {
+    const matchesCountry = selectedCountry === "all" || track.country === selectedCountry;
+    const matchesDifficulty = selectedDifficulty === "all" || track.difficulty_level === selectedDifficulty;
+    return matchesCountry && matchesDifficulty;
+  });
+
+  if (loading) {
+    return (
+      <section className="min-h-screen bg-black py-16 px-4 md:px-8 flex items-center justify-center">
+        <div className="text-white text-xl">Loading tracks...</div>
+      </section>
+    );
+  }
 
   return (
     <section className="min-h-screen bg-black py-16 px-4 md:px-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="text-center mb-12">
+        <div className="text-center mb-8">
           <h2 className="text-5xl md:text-5xl font-extrabold text-white mb-4">
-            F1 Racing Tracks
+            Racing Tracks
           </h2>
           <p className="text-gray-400 text-lg">
             Experience the world's most iconic racing circuits
           </p>
         </div>
 
-        {/* Tracks Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {f1Tracks.map((track) => (
-            <div
-              key={track.id}
-              className="bg-gradient-to-br from-gray-900 to-black border border-red-600/30 rounded-xl overflow-hidden hover:border-red-600 transition group shadow-lg hover:shadow-xl hover:shadow-red-600/20"
+        {/* Filters - Top Left */}
+        <div className="mb-8 flex flex-col sm:flex-row gap-4 items-start">
+          <div className="flex-1">
+            <label className="block text-sm font-medium text-gray-400 mb-2">Filter by Country</label>
+            <select
+              value={selectedCountry}
+              onChange={(e) => setSelectedCountry(e.target.value)}
+              className="w-full sm:w-64 bg-gray-900 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-red-600 transition"
             >
-              {/* Track Image Section */}
-              <div className="w-full h-40 bg-gradient-to-br from-red-900/20 to-black flex items-center justify-center relative overflow-hidden border-b border-red-600/30">
-                <div className="text-7xl group-hover:scale-125 transition-transform duration-300">
-                  {track.emoji}
-                </div>
-                <div className="absolute top-3 right-3 flex items-center gap-1">
-                  <span className="text-2xl">{track.country}</span>
-                </div>
-              </div>
+              <option value="all">All Countries</option>
+              {availableCountries.map((country: string) => (
+                <option key={country} value={country}>
+                  {country}
+                </option>
+              ))}
+            </select>
+          </div>
 
-              {/* Track Details */}
-              <div className="p-6">
-                <h3 className="text-xl font-bold text-white mb-1">{track.name}</h3>
-                <p className="text-gray-400 text-sm mb-4">{track.location}</p>
+          <div className="flex-1">
+            <label className="block text-sm font-medium text-gray-400 mb-2">Filter by Difficulty</label>
+            <select
+              value={selectedDifficulty}
+              onChange={(e) => setSelectedDifficulty(e.target.value)}
+              className="w-full sm:w-64 bg-gray-900 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-red-600 transition"
+            >
+              <option value="all">All Difficulties</option>
+              {availableDifficulties.map((difficulty: string) => (
+                <option key={difficulty} value={difficulty}>
+                  {difficulty}
+                </option>
+              ))}
+            </select>
+          </div>
 
-                {/* Track Stats */}
-                <div className="space-y-2 mb-4">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-400">Circuit Length:</span>
-                    <span className="text-red-500 font-semibold">{track.length}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-400">Number of Laps:</span>
-                    <span className="text-red-500 font-semibold">{track.laps}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-400">Fastest Lap:</span>
-                    <span className="text-red-500 font-semibold">{track.fastestLap}</span>
-                  </div>
-                </div>
-
-                {/* Difficulty Badge */}
-                <div className="flex items-center gap-2 mb-4">
-                  <span className="text-gray-400 text-sm">Difficulty:</span>
-                  <span className={`${getDifficultyColor(track.difficulty)} text-white px-3 py-1 rounded-full text-xs font-semibold`}>
-                    {track.difficulty}
-                  </span>
-                </div>
-
-                {/* Action Buttons */}
-                <div className="flex gap-3">
-                  <button className="flex-1 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition font-semibold text-sm">
-                    Race Now
-                  </button>
-                  <button className="flex-1 border border-red-600 text-red-600 hover:bg-red-600 hover:text-white px-4 py-2 rounded-lg transition font-semibold text-sm">
-                    Details
-                  </button>
-                </div>
-              </div>
+          {(selectedCountry !== "all" || selectedDifficulty !== "all") && (
+            <div className="flex items-end">
+              <button
+                onClick={() => {
+                  setSelectedCountry("all");
+                  setSelectedDifficulty("all");
+                }}
+                className="bg-gray-800 hover:bg-gray-700 text-gray-300 px-4 py-2.5 rounded-lg transition font-medium text-sm"
+              >
+                Clear Filters
+              </button>
             </div>
-          ))}
+          )}
         </div>
 
+        {/* Results Count */}
+        <div className="mb-6">
+          <p className="text-gray-400 text-sm">
+            Showing {filteredTracks.length} of {tracks.length} tracks
+          </p>
+        </div>
+
+        {/* Tracks Grid */}
+        {filteredTracks.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredTracks.map((track: any) => (
+              <div
+                key={track.id}
+                className="group cursor-pointer"
+              >
+                {/* Track Image Section */}
+                <div className="w-full h-64 flex items-center justify-center relative overflow-hidden rounded-xl">
+                  {track.image_url ? (
+                    <img
+                      src={`http://localhost:5000${track.image_url}`}
+                      alt={track.name}
+                      className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-300 rounded-xl mix-blend-lighten"
+                      onError={(e) => {
+                        const target = e.currentTarget as HTMLImageElement;
+                        target.style.display = 'none';
+                      }}
+                    />
+                  ) : (
+                    <div className="text-7xl group-hover:scale-125 transition-transform duration-300">
+                      🏁
+                    </div>
+                  )}
+                  {track.difficulty_level && (
+                    <div className={`absolute top-3 right-3 ${getDifficultyColor(track.difficulty_level)} text-white px-3 py-1 rounded-full text-xs font-semibold`}>
+                      {track.difficulty_level}
+                    </div>
+                  )}
+                </div>
+
+                {/* Track Details */}
+                <div className="mt-4">
+                  <div className="flex justify-between items-start mb-2">
+                    <h3 className="text-xl font-bold text-white">{track.name}</h3>
+                    {track.country && (
+                      <span className="text-gray-400 text-sm font-medium bg-gray-800 px-3 py-1 rounded-full">
+                        {track.country}
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-red-500 font-semibold text-sm">
+                    {track.length_km} km
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-12">
+            <p className="text-gray-400 text-lg">
+              {selectedCountry !== "all" || selectedDifficulty !== "all"
+                ? "No tracks match the selected filters."
+                : "No tracks available at the moment."}
+            </p>
+          </div>
+        )}
+
         {/* Track Info Banner */}
-        <div className="mt-16 bg-gradient-to-r from-red-900/30 to-black border border-red-600 rounded-xl p-8">
-          <h3 className="text-2xl font-bold text-white mb-4">🏁 Track Information</h3>
+        {/* <div className="mt-16 bg-gradient-to-r from-red-900/30 to-black border border-red-600 rounded-xl p-8">
+          <h3 className="text-2xl font-bold text-white mb-4">Track Information</h3>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             <div className="text-center">
-              <p className="text-3xl mb-2">🌍</p>
               <p className="text-white font-semibold">Multiple Locations</p>
               <p className="text-gray-400 text-sm mt-2">Global circuits</p>
             </div>
             <div className="text-center">
-              <p className="text-3xl mb-2">📊</p>
               <p className="text-white font-semibold">Varied Challenges</p>
               <p className="text-gray-400 text-sm mt-2">Easy to Expert</p>
             </div>
             <div className="text-center">
-              <p className="text-3xl mb-2">⚡</p>
               <p className="text-white font-semibold">High Speed Action</p>
               <p className="text-gray-400 text-sm mt-2">Thrilling racing</p>
             </div>
             <div className="text-center">
-              <p className="text-3xl mb-2">🏆</p>
               <p className="text-white font-semibold">Professional Grade</p>
               <p className="text-gray-400 text-sm mt-2">Realistic simulation</p>
             </div>
           </div>
-        </div>
+        </div> */}
       </div>
     </section>
   );
