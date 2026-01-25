@@ -38,6 +38,8 @@ const initializeDatabase = async () => {
     }
 
     // Create users table
+
+    //user table
     await pool.query(`
       CREATE TABLE IF NOT EXISTS users (
         id SERIAL PRIMARY KEY,
@@ -52,6 +54,31 @@ const initializeDatabase = async () => {
         updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
     `);
+
+    //car categories table
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS car_categories (
+      id SERIAL PRIMARY KEY,
+      name VARCHAR(100) UNIQUE NOT NULL,
+      created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    );
+    `);
+
+    //cars table
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS cars (
+      id SERIAL PRIMARY KEY,
+      category_id INTEGER REFERENCES car_categories(id) ON DELETE SET NULL,
+      name VARCHAR(100) NOT NULL,
+      model VARCHAR(100) NOT NULL,
+      image_url TEXT,
+      created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    );
+    `);
+
+
 
     // Create index for better performance
     await pool.query(`

@@ -1,96 +1,55 @@
+"use client";
+
+import { useState, useEffect } from "react";
+
 export default function Cars() {
-  const simulatorCars = [
-    {
-      id: 1,
-      name: "Ferrari F1-75",
-      team: "Scuderia Ferrari",
-      year: "2024",
-      description: "High-speed racing machine with exceptional acceleration",
-      specs: "V6 Hybrid, 1050 HP",
-      emoji: "🔴",
-      color: "from-red-900 to-red-800"
-    },
-    {
-      id: 2,
-      name: "Mercedes-AMG F1",
-      team: "Mercedes-AMG Petronas",
-      year: "2024",
-      description: "Balanced performance with superior handling",
-      specs: "V6 Hybrid, 1050 HP",
-      emoji: "⚪",
-      color: "from-gray-800 to-gray-700"
-    },
-    {
-      id: 3,
-      name: "Red Bull Racing RB20",
-      team: "Red Bull Racing",
-      year: "2024",
-      description: "Lightweight design built for ultimate speed",
-      specs: "V6 Hybrid, 1050 HP",
-      emoji: "🔵",
-      color: "from-blue-900 to-blue-800"
-    },
-    {
-      id: 4,
-      name: "McLaren F1",
-      team: "McLaren F1 Team",
-      year: "2024",
-      description: "Advanced aerodynamics with excellent cornering grip",
-      specs: "V6 Hybrid, 1050 HP",
-      emoji: "🟠",
-      color: "from-orange-900 to-orange-800"
-    },
-    {
-      id: 5,
-      name: "Aston Martin AMR24",
-      team: "Aston Martin F1",
-      year: "2024",
-      description: "Premium engineering with distinctive performance",
-      specs: "V6 Hybrid, 1050 HP",
-      emoji: "💚",
-      color: "from-green-900 to-green-800"
-    },
-    {
-      id: 6,
-      name: "Alpine F1",
-      team: "BWT Alpine",
-      year: "2024",
-      description: "Proven reliability with competitive straight-line speed",
-      specs: "V6 Hybrid, 1050 HP",
-      emoji: "🟦",
-      color: "from-indigo-900 to-indigo-800"
-    },
-    {
-      id: 7,
-      name: "Alfa Romeo C44",
-      team: "Stake F1 Team",
-      year: "2024",
-      description: "Agile handling and responsive steering feedback",
-      specs: "V6 Hybrid, 1050 HP",
-      emoji: "🔴",
-      color: "from-red-900 to-red-700"
-    },
-    {
-      id: 8,
-      name: "Haas F1",
-      team: "Haas Formula 1",
-      year: "2024",
-      description: "American engineering with precision control",
-      specs: "V6 Hybrid, 1050 HP",
-      emoji: "⚪",
-      color: "from-gray-700 to-gray-800"
-    },
-    {
-      id: 9,
-      name: "Williams Racing",
-      team: "Williams Racing",
-      year: "2024",
-      description: "Heritage of excellence with modern innovation",
-      specs: "V6 Hybrid, 1050 HP",
-      emoji: "🔵",
-      color: "from-blue-800 to-blue-700"
-    },
-  ];
+  const [cars, setCars] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchCategories();
+    fetchCars();
+  }, []);
+
+  const fetchCategories = async () => {
+    try {
+      const response = await fetch("http://localhost:5000/api/car-categories");
+      const data = await response.json();
+      if (data.categories) {
+        setCategories(data.categories);
+      }
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+    }
+  };
+
+  const fetchCars = async () => {
+    try {
+      const response = await fetch("http://localhost:5000/api/cars");
+      const data = await response.json();
+      if (data.cars) {
+        setCars(data.cars);
+      }
+    } catch (error) {
+      console.error("Error fetching cars:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const filteredCars = selectedCategory === "all"
+    ? cars
+    : cars.filter((car: any) => car.category_name === selectedCategory);
+
+  if (loading) {
+    return (
+      <section className="min-h-screen bg-black py-16 px-4 md:px-8 flex items-center justify-center">
+        <div className="text-white text-xl">Loading cars...</div>
+      </section>
+    );
+  }
 
   return (
     <section className="min-h-screen bg-black py-16 px-4 md:px-8">
@@ -101,54 +60,89 @@ export default function Cars() {
             Available Simulator Cars
           </h2>
           <p className="text-gray-400 text-lg">
-            Experience the thrill of driving F1 cars in our advanced simulator
+            Experience the thrill of driving our premium racing cars
           </p>
         </div>
 
-        {/* Cars Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {simulatorCars.map((car) => (
-            <div
-              key={car.id}
-              className={`bg-gradient-to-br ${car.color} border border-red-600/40 rounded-xl overflow-hidden hover:border-red-600 transition group shadow-lg hover:shadow-xl hover:shadow-red-600/20`}
+        {/* Category Filter */}
+        <div className="mb-8 flex flex-wrap justify-center gap-3">
+          <button
+            onClick={() => setSelectedCategory("all")}
+            className={`px-6 py-2 rounded-full font-semibold transition ${
+              selectedCategory === "all"
+                ? "bg-red-600 text-white"
+                : "bg-gray-800 text-gray-300 hover:bg-gray-700"
+            }`}
+          >
+            All Cars
+          </button>
+          {categories.map((category: any) => (
+            <button
+              key={category.id}
+              onClick={() => setSelectedCategory(category.name)}
+              className={`px-6 py-2 rounded-full font-semibold transition ${
+                selectedCategory === category.name
+                  ? "bg-red-600 text-white"
+                  : "bg-gray-800 text-gray-300 hover:bg-gray-700"
+              }`}
             >
-              {/* Car Image Section */}
-              <div className="w-full h-40 bg-black/50 flex items-center justify-center relative overflow-hidden border-b border-red-600/30">
-                <div className="text-7xl group-hover:scale-125 transition-transform duration-300">
-                  {car.emoji}
-                </div>
-                <div className="absolute top-3 right-3 bg-red-600 text-white px-3 py-1 rounded-full text-xs font-semibold">
-                  {car.year}
-                </div>
-              </div>
-
-              {/* Car Details */}
-              <div className="p-6">
-                <h3 className="text-2xl font-bold text-white mb-1">{car.name}</h3>
-                <p className="text-red-500 font-semibold text-sm mb-3">{car.team}</p>
-                <p className="text-gray-300 text-sm mb-4">{car.description}</p>
-
-                {/* Specs */}
-                <div className="bg-black/40 rounded-lg p-3 mb-4">
-                  <p className="text-gray-300 text-xs font-mono">{car.specs}</p>
-                </div>
-
-                {/* Action Buttons */}
-                <div className="flex gap-3">
-                  <button className="flex-1 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition font-semibold">
-                    Select Car
-                  </button>
-                  <button className="flex-1 border border-red-600 text-red-600 hover:bg-red-600 hover:text-white px-4 py-2 rounded-lg transition font-semibold">
-                    Details
-                  </button>
-                </div>
-              </div>
-            </div>
+              {category.name}
+            </button>
           ))}
         </div>
 
+        {/* Cars Grid */}
+        {filteredCars.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredCars.map((car: any) => (
+              <div
+                key={car.id}
+                className="group cursor-pointer"
+              >
+                {/* Car Image Section */}
+                <div className="w-full h-64 flex items-center justify-center relative overflow-hidden rounded-xl">
+                  {car.image_url ? (
+                    <img
+                      src={`http://localhost:5000${car.image_url}`}
+                      alt={car.name}
+                      className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-300 rounded-xl mix-blend-lighten"
+                      onError={(e) => {
+                        const target = e.currentTarget as HTMLImageElement;
+                        target.style.display = 'none';
+                      }}
+                    />
+                  ) : (
+                    <div className="text-7xl group-hover:scale-125 transition-transform duration-300">
+                      🏎️
+                    </div>
+                  )}
+                  {car.category_name && (
+                    <div className="absolute top-3 right-3 bg-red-600 text-white px-3 py-1 rounded-full text-xs font-semibold">
+                      {car.category_name}
+                    </div>
+                  )}
+                </div>
+
+                {/* Car Details */}
+                <div className="mt-4 flex justify-between items-center">
+                  <h3 className="text-xl font-bold text-white">{car.name}</h3>
+                  <p className="text-red-500 font-semibold text-sm">{car.model}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-12">
+            <p className="text-gray-400 text-lg">
+              {selectedCategory === "all" 
+                ? "No cars available at the moment." 
+                : `No cars available in ${selectedCategory} category.`}
+            </p>
+          </div>
+        )}
+
         {/* Features Banner */}
-        <div className="mt-16 bg-gradient-to-r from-red-900/30 to-black border border-red-600 rounded-xl p-8">
+        {/* <div className="mt-16 bg-gradient-to-r from-red-900/30 to-black border border-red-600 rounded-xl p-8">
           <h3 className="text-2xl font-bold text-white mb-4">🏁 Simulator Features</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="text-center">
@@ -167,7 +161,7 @@ export default function Cars() {
               <p className="text-gray-400 text-sm mt-2">Multiple famous F1 circuits</p>
             </div>
           </div>
-        </div>
+        </div> */}
       </div>
     </section>
   );

@@ -1,13 +1,20 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
-import Link from "next/link";
+import DashboardOverview from "./components/DashboardOverview";
+import UsersManagement from "./components/UsersManagement";
+import BookingManagement from "./components/BookingManagement";
+import CarManagement from "./components/CarManagement";
+import TrackManagement from "./components/TrackManagement";
+import GalleryManagement from "./components/GalleryManagement";
 
 export default function AdminDashboard() {
   const { user, isAdmin, isLoading, logout } = useAuth();
   const router = useRouter();
+  const [contentManagementOpen, setContentManagementOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState("dashboard");
 
   useEffect(() => {
     if (!isLoading && (!user || !isAdmin)) {
@@ -28,140 +35,154 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white">
-      {/* Header */}
-      <header className="bg-gradient-to-r from-gray-900 to-black border-b border-red-600/30 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-red-600">Admin Dashboard</h1>
-          <div className="flex items-center gap-4">
-            <span className="text-gray-400">
-              Welcome, {user.firstName} {user.lastName}
-            </span>
+    <div className="min-h-screen bg-black text-white flex">
+      {/* Sidebar */}
+      <aside className="w-64 bg-gradient-to-b from-gray-900 to-black border-r border-red-600/30 fixed h-full overflow-y-auto">
+        <div className="p-6">
+          <h2 className="text-2xl font-bold text-red-600 mb-8">Admin Panel</h2>
+          
+          {/* Navigation Menu */}
+          <nav className="space-y-1">
+            {/* Dashboard */}
             <button
-              onClick={logout}
-              className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition"
+              onClick={() => setActiveSection("dashboard")}
+              className={`w-full text-left px-4 py-3 rounded-lg transition font-medium ${
+                activeSection === "dashboard"
+                  ? "bg-red-600 text-white shadow-lg"
+                  : "text-gray-300 hover:bg-gray-800 hover:text-white"
+              }`}
             >
-              Logout
+              Dashboard
             </button>
-          </div>
-        </div>
-      </header>
 
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-6 py-8">
-        <div className="mb-8">
-          <h2 className="text-3xl font-bold mb-2">Dashboard Overview</h2>
-          <p className="text-gray-400">Manage your racing point platform</p>
-        </div>
-
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-gradient-to-br from-gray-900 to-black border border-red-600/30 rounded-xl p-6">
-            <h3 className="text-gray-400 text-sm mb-2">Total Users</h3>
-            <p className="text-3xl font-bold text-white">150</p>
-            <p className="text-green-500 text-sm mt-2">+12% from last month</p>
-          </div>
-
-          <div className="bg-gradient-to-br from-gray-900 to-black border border-red-600/30 rounded-xl p-6">
-            <h3 className="text-gray-400 text-sm mb-2">Total Bookings</h3>
-            <p className="text-3xl font-bold text-white">487</p>
-            <p className="text-green-500 text-sm mt-2">+8% from last month</p>
-          </div>
-
-          <div className="bg-gradient-to-br from-gray-900 to-black border border-red-600/30 rounded-xl p-6">
-            <h3 className="text-gray-400 text-sm mb-2">Revenue</h3>
-            <p className="text-3xl font-bold text-white">$12,450</p>
-            <p className="text-green-500 text-sm mt-2">+15% from last month</p>
-          </div>
-        </div>
-
-        {/* Quick Actions */}
-        <div className="mb-8">
-          <h3 className="text-2xl font-bold mb-4">Quick Actions</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <Link
-              href="/admin/users"
-              className="bg-gradient-to-br from-gray-900 to-black border border-red-600/30 rounded-xl p-6 hover:border-red-600 transition text-center"
+            {/* Users */}
+            <button
+              onClick={() => setActiveSection("users")}
+              className={`w-full text-left px-4 py-3 rounded-lg transition font-medium ${
+                activeSection === "users"
+                  ? "bg-red-600 text-white shadow-lg"
+                  : "text-gray-300 hover:bg-gray-800 hover:text-white"
+              }`}
             >
-              <div className="text-red-600 text-3xl mb-2">👥</div>
-              <h4 className="font-semibold">Manage Users</h4>
-            </Link>
+              Users
+            </button>
 
-            <Link
-              href="/admin/bookings"
-              className="bg-gradient-to-br from-gray-900 to-black border border-red-600/30 rounded-xl p-6 hover:border-red-600 transition text-center"
+            {/* Booking Management */}
+            <button
+              onClick={() => setActiveSection("bookings")}
+              className={`w-full text-left px-4 py-3 rounded-lg transition font-medium ${
+                activeSection === "bookings"
+                  ? "bg-red-600 text-white shadow-lg"
+                  : "text-gray-300 hover:bg-gray-800 hover:text-white"
+              }`}
             >
-              <div className="text-red-600 text-3xl mb-2">📅</div>
-              <h4 className="font-semibold">View Bookings</h4>
-            </Link>
+              Booking Management
+            </button>
 
-            <Link
-              href="/admin/cars"
-              className="bg-gradient-to-br from-gray-900 to-black border border-red-600/30 rounded-xl p-6 hover:border-red-600 transition text-center"
-            >
-              <div className="text-red-600 text-3xl mb-2">🏎️</div>
-              <h4 className="font-semibold">Manage Cars</h4>
-            </Link>
+            {/* Content Management Dropdown */}
+            <div>
+              <button
+                onClick={() => setContentManagementOpen(!contentManagementOpen)}
+                className={`w-full text-left px-4 py-3 rounded-lg transition font-medium flex items-center justify-between ${
+                  ["cars", "tracks", "gallery"].includes(activeSection)
+                    ? "bg-red-600/20 text-white"
+                    : "text-gray-300 hover:bg-gray-800 hover:text-white"
+                }`}
+              >
+                <span>Content Management</span>
+                <svg 
+                  className={`w-4 h-4 transition-transform ${contentManagementOpen ? "rotate-180" : ""}`} 
+                  fill="none" 
+                  viewBox="0 0 24 24" 
+                  stroke="currentColor"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
 
-            <Link
-              href="/admin/tracks"
-              className="bg-gradient-to-br from-gray-900 to-black border border-red-600/30 rounded-xl p-6 hover:border-red-600 transition text-center"
-            >
-              <div className="text-red-600 text-3xl mb-2">🏁</div>
-              <h4 className="font-semibold">Manage Tracks</h4>
-            </Link>
-          </div>
+              {/* Dropdown Items */}
+              {contentManagementOpen && (
+                <div className="mt-1 space-y-1 border-l-2 border-red-600/30 ml-4 pl-3">
+                  <button
+                    onClick={() => setActiveSection("cars")}
+                    className={`w-full text-left px-4 py-2.5 rounded-lg transition text-sm ${
+                      activeSection === "cars"
+                        ? "bg-red-600 text-white shadow-lg"
+                        : "text-gray-400 hover:bg-gray-800 hover:text-white"
+                    }`}
+                  >
+                    Car Management
+                  </button>
+
+                  <button
+                    onClick={() => setActiveSection("tracks")}
+                    className={`w-full text-left px-4 py-2.5 rounded-lg transition text-sm ${
+                      activeSection === "tracks"
+                        ? "bg-red-600 text-white shadow-lg"
+                        : "text-gray-400 hover:bg-gray-800 hover:text-white"
+                    }`}
+                  >
+                    Track Management
+                  </button>
+
+                  <button
+                    onClick={() => setActiveSection("gallery")}
+                    className={`w-full text-left px-4 py-2.5 rounded-lg transition text-sm ${
+                      activeSection === "gallery"
+                        ? "bg-red-600 text-white shadow-lg"
+                        : "text-gray-400 hover:bg-gray-800 hover:text-white"
+                    }`}
+                  >
+                    Gallery
+                  </button>
+                </div>
+              )}
+            </div>
+          </nav>
         </div>
 
-        {/* Recent Activity */}
-        <div>
-          <h3 className="text-2xl font-bold mb-4">Recent Activity</h3>
-          <div className="bg-gradient-to-br from-gray-900 to-black border border-red-600/30 rounded-xl overflow-hidden">
-            <table className="w-full">
-              <thead className="bg-black/50">
-                <tr>
-                  <th className="text-left px-6 py-4 text-gray-400 font-medium">User</th>
-                  <th className="text-left px-6 py-4 text-gray-400 font-medium">Action</th>
-                  <th className="text-left px-6 py-4 text-gray-400 font-medium">Date</th>
-                  <th className="text-left px-6 py-4 text-gray-400 font-medium">Status</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-800">
-                <tr className="hover:bg-black/30 transition">
-                  <td className="px-6 py-4">John Doe</td>
-                  <td className="px-6 py-4">New Booking</td>
-                  <td className="px-6 py-4">2026-01-24</td>
-                  <td className="px-6 py-4">
-                    <span className="bg-green-600/20 text-green-400 px-3 py-1 rounded-full text-sm">
-                      Confirmed
-                    </span>
-                  </td>
-                </tr>
-                <tr className="hover:bg-black/30 transition">
-                  <td className="px-6 py-4">Jane Smith</td>
-                  <td className="px-6 py-4">Registered</td>
-                  <td className="px-6 py-4">2026-01-23</td>
-                  <td className="px-6 py-4">
-                    <span className="bg-blue-600/20 text-blue-400 px-3 py-1 rounded-full text-sm">
-                      Active
-                    </span>
-                  </td>
-                </tr>
-                <tr className="hover:bg-black/30 transition">
-                  <td className="px-6 py-4">Mike Johnson</td>
-                  <td className="px-6 py-4">Completed Session</td>
-                  <td className="px-6 py-4">2026-01-23</td>
-                  <td className="px-6 py-4">
-                    <span className="bg-gray-600/20 text-gray-400 px-3 py-1 rounded-full text-sm">
-                      Completed
-                    </span>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+        {/* Logout Button at Bottom */}
+        <div className="absolute bottom-0 left-0 right-0 p-6 border-t border-red-600/30 bg-gradient-to-b from-transparent to-black">
+          <button
+            onClick={logout}
+            className="w-full bg-red-600 hover:bg-red-700 text-white px-4 py-3 rounded-lg transition font-medium shadow-lg"
+          >
+            Logout
+          </button>
         </div>
-      </main>
+      </aside>
+
+      {/* Main Content Area */}
+      <div className="flex-1 ml-64">
+        {/* Header */}
+        <header className="bg-gradient-to-r from-gray-900 to-black border-b border-red-600/30 sticky top-0 z-50">
+          <div className="px-8 py-4 flex justify-between items-center">
+            <h1 className="text-2xl font-bold text-red-600">
+              {activeSection === "dashboard" && "Dashboard Overview"}
+              {activeSection === "users" && "User Management"}
+              {activeSection === "cars" && "Car Management"}
+              {activeSection === "tracks" && "Track Management"}
+              {activeSection === "gallery" && "Gallery Management"}
+              {activeSection === "bookings" && "Booking Management"}
+            </h1>
+            <div className="flex items-center gap-4">
+              <span className="text-gray-400">
+                Welcome, {user.firstName} {user.lastName}
+              </span>
+            </div>
+          </div>
+        </header>
+
+        {/* Content Area */}
+        <main className="px-8 py-8">
+          {activeSection === "dashboard" && <DashboardOverview />}
+          {activeSection === "users" && <UsersManagement />}
+          {activeSection === "bookings" && <BookingManagement />}
+          {activeSection === "cars" && <CarManagement />}
+          {activeSection === "tracks" && <TrackManagement />}
+          {activeSection === "gallery" && <GalleryManagement />}
+        </main>
+      </div>
     </div>
   );
 }
