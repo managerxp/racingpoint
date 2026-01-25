@@ -19,6 +19,7 @@ import authRoutes from './routes/auth.Routes.js';
 import adminRoutes from './routes/admin.Routes.js';
 import carCategoryRouter from './routes/carCateory.Routes.js';
 import carRouter from './routes/cars.Routes.js';
+import trackRouter from './routes/tracks.Routes.js';
 
 const app = express();
 
@@ -136,7 +137,7 @@ app.get('/api/debug/check-file/:filename', async (req, res) => {
         });
         return;
       } catch (error) {
-        console.log(`❌ Not found at: ${fullPath}`);
+        console.log(` Not found at: ${fullPath}`);
       }
     }
     
@@ -203,6 +204,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/car-categories', carCategoryRouter);
 app.use('/api/cars', carRouter);
+app.use('/api/tracks', trackRouter);
 
 // Health check route with more info
 app.get('/health', (req, res) => {
@@ -218,7 +220,7 @@ app.get('/health', (req, res) => {
 // Test static file route
 app.get('/test-image/:filename', (req, res) => {
   const filename = req.params.filename;
-  console.log(`\n📤 Serving test image: ${filename}`);
+  console.log(`\n Serving test image: ${filename}`);
   console.log(`Requested URL: ${req.originalUrl}`);
   console.log(`Should serve from: /uploads/cars/${filename}`);
   
@@ -228,7 +230,7 @@ app.get('/test-image/:filename', (req, res) => {
 
 // 404 handler
 app.use((req, res) => {
-  console.log(`\n❌ 404 Not Found: ${req.method} ${req.originalUrl}`);
+  console.log(`\n 404 Not Found: ${req.method} ${req.originalUrl}`);
   console.log('Request headers:', req.headers);
   console.log('Request params:', req.params);
   console.log('Request query:', req.query);
@@ -243,7 +245,7 @@ app.use((req, res) => {
 
 // Error handling middleware
 app.use((err, req, res, next) => {
-  console.error('\n🔥 Error Stack:', err.stack);
+  console.error('\n Error Stack:', err.stack);
   console.error('Error Message:', err.message);
   console.error('Request URL:', req.originalUrl);
   
@@ -283,7 +285,7 @@ const startServer = async () => {
       
     });
   } catch (error) {
-    console.error('\n❌ Failed to start server:', error);
+    console.error('\n Failed to start server:', error);
     process.exit(1);
   }
 };
