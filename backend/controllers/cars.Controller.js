@@ -11,15 +11,20 @@ const __dirname = path.dirname(__filename);
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     const uploadDir = path.join(__dirname, '../../uploads/cars');
+    console.log('Multer destination:', uploadDir);
     // Create directory if it doesn't exist
     if (!fs.existsSync(uploadDir)) {
+      console.log('Creating directory:', uploadDir);
       fs.mkdirSync(uploadDir, { recursive: true });
     }
+    console.log('Directory exists:', fs.existsSync(uploadDir));
     cb(null, uploadDir);
   },
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, 'car-' + uniqueSuffix + path.extname(file.originalname));
+    const filename = 'car-' + uniqueSuffix + path.extname(file.originalname);
+    console.log('Multer filename:', filename);
+    cb(null, filename);
   }
 });
 
@@ -46,12 +51,16 @@ export const createCar = async (req, res) => {
   try {
     const { category_id, name, model } = req.body;
 
+    console.log('Creating car with data:', { category_id, name, model });
+    console.log('Uploaded file:', req.file);
+
     if (!name || !model) {
       return res.status(400).json({ error: 'Car name and model are required' });
     }
 
     // Get image URL if file was uploaded
     const image_url = req.file ? `/uploads/cars/${req.file.filename}` : null;
+    console.log('Image URL:', image_url);
 
     const result = await pool.query(
       'INSERT INTO cars (category_id, name, model, image_url) VALUES ($1, $2, $3, $4) RETURNING *',
@@ -81,6 +90,8 @@ export const getAllCars = async (req, res) => {
       LEFT JOIN car_categories cc ON c.category_id = cc.id
       ORDER BY c.created_at DESC
     `);
+
+    console.log('Fetched cars:', result.rows);
 
     res.status(200).json({
       message: 'Cars retrieved successfully',
