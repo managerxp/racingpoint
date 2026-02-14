@@ -6,6 +6,8 @@ import { initializeDatabase } from './config/database.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs/promises';
+import availabilityRouter from './routes/availability.Routes.js';
+
 
 // Get __dirname equivalent in ES modules
 const __filename = fileURLToPath(import.meta.url);
@@ -34,6 +36,7 @@ app.use(cors({
   credentials: true
 }));
 app.use(express.json());
+app.use('/api/availability', availabilityRouter);
 app.use(express.urlencoded({ extended: true }));
 
 // Debug: Log current directory structure
