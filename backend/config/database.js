@@ -1,3 +1,4 @@
+// ... keep all your existing imports
 import pg from 'pg';
 import bcrypt from 'bcryptjs';
 import dotenv from 'dotenv';
@@ -32,14 +33,11 @@ const testConnection = async () => {
 // Initialize database with tables
 const initializeDatabase = async () => {
   try {
-    // Test connection first
     if (!await testConnection()) {
       throw new Error('Database connection failed');
     }
 
-    // Create users table
-
-    //user table
+    // ---------------- USERS ----------------
     await pool.query(`
       CREATE TABLE IF NOT EXISTS users (
         id SERIAL PRIMARY KEY,
@@ -55,53 +53,57 @@ const initializeDatabase = async () => {
       );
     `);
 
-    //car categories table
+    // ---------------- CAR CATEGORIES ----------------
     await pool.query(`
       CREATE TABLE IF NOT EXISTS car_categories (
-      id SERIAL PRIMARY KEY,
-      name VARCHAR(100) UNIQUE NOT NULL,
-      created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-      updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-    );
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(100) UNIQUE NOT NULL,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+      );
     `);
 
-    //cars table
+    // ---------------- CARS (PODS) ----------------
     await pool.query(`
       CREATE TABLE IF NOT EXISTS cars (
-      id SERIAL PRIMARY KEY,
-      category_id INTEGER REFERENCES car_categories(id) ON DELETE SET NULL,
-      name VARCHAR(100) NOT NULL,
-      model VARCHAR(100) NOT NULL,
-      image_url TEXT,
-      created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-      updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-    );
+        id SERIAL PRIMARY KEY,
+        category_id INTEGER REFERENCES car_categories(id) ON DELETE SET NULL,
+        name VARCHAR(100) NOT NULL,
+        model VARCHAR(100) NOT NULL,
+        image_url TEXT,
+
+        /* NEW DOMAIN COLUMNS */
+        status VARCHAR(30) DEFAULT 'ACTIVE',
+        operating_hours JSONB DEFAULT '{}'::jsonb,
+
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+      );
     `);
 
-    //tracks table
+    // ---------------- SAFE MIGRATIONS ----------------
     await pool.query(`
-      CREATE TABLE IF NOT EXISTS tracks (
-      id SERIAL PRIMARY KEY,
-      name VARCHAR(100) UNIQUE NOT NULL,
-      length_km FLOAT NOT NULL,
-      country VARCHAR(100),
-      image_url TEXT,
-      difficulty_level VARCHAR(50),
-      created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-      updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-    );
+      ALTER TABLE cars
+      ADD COLUMN IF NOT EXISTS status VARCHAR(30) DEFAULT 'ACTIVE';
     `);
-    
 
+    await pool.query(`
+      ALTER TABLE cars
+      ADD COLUMN IF NOT EXISTS operating_hours JSONB DEFAULT '{}'::jsonb;
+    `);
 
-
-    // Create index for better performance
+    // ---------------- INDEXES ----------------
     await pool.query(`
       CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
     `);
 
-    // Check if admin exists, if not create from .env
+    await pool.query(`
+      CREATE INDEX IF NOT EXISTS idx_cars_status ON cars(status);
+    `);
+
+    // ---------------- ADMIN SEED ----------------
     const adminEmail = process.env.ADMIN_EMAIL;
+
     const adminResult = await pool.query(
       'SELECT * FROM users WHERE email = $1 AND is_admin = true',
       [adminEmail]
@@ -109,21 +111,23 @@ const initializeDatabase = async () => {
 
     if (adminResult.rows.length === 0 && adminEmail) {
       const hashedPassword = await bcrypt.hash(process.env.ADMIN_PASSWORD, 10);
+
       await pool.query(
         `INSERT INTO users (first_name, last_name, email, password, is_admin) 
          VALUES ($1, $2, $3, $4, $5)`,
         ['Admin', 'System', adminEmail, hashedPassword, true]
       );
+
       console.log(' Admin user created successfully');
     }
 
     console.log(' Database initialized successfully');
     return true;
+
   } catch (error) {
     console.error(' Error initializing database:', error);
     throw error;
   }
 };
 
-// Export pool and functions
 export { pool, initializeDatabase, testConnection };

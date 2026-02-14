@@ -17,6 +17,12 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 /* -------------------------------------------------------------------------- */
+/*                               NEW DOMAIN ENUM                              */
+/* -------------------------------------------------------------------------- */
+
+const VALID_STATUSES = ['ACTIVE', 'MAINTENANCE', 'DISABLED'];
+
+/* -------------------------------------------------------------------------- */
 /*                               File Utilities                               */
 /* -------------------------------------------------------------------------- */
 
@@ -84,7 +90,7 @@ export const createCar = async (req, res) => {
   const client = await pool.connect();
 
   try {
-    const { category_id, name, model } = req.body;
+    const { category_id, name, model, status, operating_hours } = req.body;
 
     if (!name || !model) {
       return res.status(400).json({
@@ -93,15 +99,35 @@ export const createCar = async (req, res) => {
       });
     }
 
+    const podStatus =
+      status && VALID_STATUSES.includes(status)
+        ? status
+        : 'ACTIVE';
+
+    let hours = {};
+    if (operating_hours) {
+      try {
+        hours =
+          typeof operating_hours === 'string'
+            ? JSON.parse(operating_hours)
+            : operating_hours;
+      } catch {
+        return res.status(400).json({
+          success: false,
+          error: 'Invalid operating_hours JSON'
+        });
+      }
+    }
+
     const image_url = req.file
       ? `/uploads/cars/${req.file.filename}`
       : null;
 
     const result = await client.query(
-      `INSERT INTO cars (category_id, name, model, image_url)
-       VALUES ($1, $2, $3, $4)
+      `INSERT INTO cars (category_id, name, model, image_url, status, operating_hours)
+       VALUES ($1, $2, $3, $4, $5, $6)
        RETURNING *`,
-      [category_id || null, name, model, image_url]
+      [category_id || null, name, model, image_url, podStatus, hours]
     );
 
     return res.status(201).json({
@@ -196,7 +222,7 @@ export const updateCar = async (req, res) => {
 
   try {
     const { id } = req.params;
-    const { category_id, name, model } = req.body;
+    const { category_id, name, model, status, operating_hours } = req.body;
 
     if (!name || !model) {
       return res.status(400).json({
@@ -205,8 +231,15 @@ export const updateCar = async (req, res) => {
       });
     }
 
+    if (status && !VALID_STATUSES.includes(status)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid pod status'
+      });
+    }
+
     const existing = await client.query(
-      'SELECT image_url FROM cars WHERE id = $1',
+      'SELECT * FROM cars WHERE id = $1',
       [id]
     );
 
@@ -230,13 +263,42 @@ export const updateCar = async (req, res) => {
       }
     }
 
+    let hours = existing.rows[0].operating_hours;
+
+    if (operating_hours) {
+      try {
+        hours =
+          typeof operating_hours === 'string'
+            ? JSON.parse(operating_hours)
+            : operating_hours;
+      } catch {
+        return res.status(400).json({
+          success: false,
+          error: 'Invalid operating_hours JSON'
+        });
+      }
+    }
+
     const result = await client.query(
       `UPDATE cars
-       SET category_id=$1, name=$2, model=$3, image_url=$4,
+       SET category_id=$1,
+           name=$2,
+           model=$3,
+           image_url=$4,
+           status=$5,
+           operating_hours=$6,
            updated_at=CURRENT_TIMESTAMP
-       WHERE id=$5
+       WHERE id=$7
        RETURNING *`,
-      [category_id || null, name, model, image_url, id]
+      [
+        category_id || null,
+        name,
+        model,
+        image_url,
+        status || existing.rows[0].status,
+        hours,
+        id
+      ]
     );
 
     return res.status(200).json({
